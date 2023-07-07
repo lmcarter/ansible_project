@@ -1,0 +1,45 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: Install updates (CentOS)
+    tags: always
+    dnf:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: Install updates (Ubuntu)
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Create a user
+    tags: always
+    user:
+      name: ariona
+      groups: root
+
+  - name: Add SSH key for Ariona
+    tags: always
+    authorized_key:
+      user: ariona
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/eH/K1Zo98DuIdQyGbK5t4c9EuNY87pNclgYIx++1x ansible"
+
+  - name: Add sudoers file for Ariona
+    tags: always
+    copy:
+      src: sudoer_ariona
+      dest: /etc/sudoers.d/ariona
+      owner: root
+      group: root
+      mode: 0440
