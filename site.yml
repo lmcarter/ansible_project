@@ -4,19 +4,47 @@
   become: true
   pre_tasks:
 
-  - name: Install updates (CentOS)
+  - name: Update repo cache (CentOS)
     tags: always
     dnf:
-      update_only: yes
       update_cache: yes
+    changed_when: false
     when: ansible_distribution == "CentOS"
 
-  - name: Install updates (Ubuntu)
+  - name: Update repo cache (Ubuntu)
     tags: always
     apt:
-      upgrade: dist
       update_cache: yes
+    changed_when: false
     when: ansible_distribution == "Ubuntu"
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Add SSH key for Ariona
+    tags: always
+    authorized_key:
+      user: ariona
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/eH/K1Zo98DuIdQyGbK5t4c9EuNY87pNclgYIx++1x ansible"
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: Install unzip
+    package:
+      name: unzip
+
+  - name: Install Terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/1.5.2/terraform_1.5.2_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: root
+      group: root
+
 
 - hosts: web_servers
   become: true
@@ -31,6 +59,12 @@
       state: latest
     when: ansible_distribution == "CentOS"
 
+  - name: Start Apache2 service on Ubuntu servers
+    tags: apache2,ubuntu
+    service:
+      name: apache2
+      state: started
+    when: ansible_distribution == "Ubuntu"
 
   - name: Install apache and php for Ubuntu servers
     tags: apache,apache2,ubuntu
