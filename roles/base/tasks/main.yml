@@ -1,0 +1,5 @@
+- name: Add SSH key for Ariona
+  tags: always
+  authorized_key:
+    user: ariona
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/eH/K1Zo98DuIdQyGbK5t4c9EuNY87pNclgYIx++1x ansible"
